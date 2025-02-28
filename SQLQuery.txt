@@ -1,0 +1,52 @@
+-- Create the database 
+CREATE DATABASE PoliceDb;
+Go
+Use PoliceDb;
+Go
+
+CREATE TABLE DonneesPersonnelles(
+		ID INT PRIMARY KEY IDENTITY(1,1) , 
+		Nom NVARCHAR(100) NOT NULL, 
+		Prenom NVARCHAR(100) NOT NULL, 
+		Adresse NVARCHAR(255), 
+		Ville NVARCHAR(100), 
+		CodePostal  NVARCHAR(100), 
+		CodeFiscal NVARCHAR(60) UNIQUE
+);
+GO
+CREATE TABLE ViolationType (
+	ViolationID INT PRIMARY KEY IDENTITY, 
+	[Description] NVARCHAR(200) NOT NULL
+);
+GO
+CREATE TABLE [MINUTES] (
+	
+	MinuteID INT PRIMARY KEY IDENTITY, 
+	ViolationID INT NOT NULL FOREIGN KEY REFERENCES ViolationType(ViolationID),
+	IDClient INT NOT NULL FOREIGN KEY REFERENCES DonneesPersonnelles(ID),
+	ViolationDate DATE NOT NULL , 
+	ViolationAddress NVARCHAR(200),
+	AgentName NVARCHAR(200), 
+	MinutesTranscriptionDate DATE NOT NULL, 
+	Amount DECIMAL(10,2) CHECK (Amount> =0 ), 
+	PointsDeduction INT CHECK (PointsDeduction> =0 ), 
+);
+GO
+
+INSERT INTO DonneesPersonnelles (Nom, Prenom, Adresse, Ville, CodePostal, CodeFiscal) VALUES
+('Dupont', 'Jean', '12 rue de Paris', 'Palerme', '90000', 'FR123456'),
+('Martin', 'Sophie', '34 avenue des Champs', 'Marseille', '13000', 'FR654321');
+GO
+
+INSERT INTO ViolationType (Description) VALUES
+('Excès de vitesse'),
+('Stationnement interdit'),
+('Non-respect du feu rouge');
+GO
+
+INSERT INTO Minutes (ViolationID, IDClient, ViolationDate, ViolationAddress, AgentName, MinutesTranscriptionDate, Amount, PointsDeduction) VALUES
+(1, 1, '2024-01-10', 'Boulevard Saint-Michel', 'Agent Durand', '2024-01-11', 135, 2),
+(2, 2, '2024-01-15', 'Rue Lafayette', 'Agent Morel', '2024-01-16', 35, 0),
+(3, 1, '2024-01-20', 'Place de la République', 'Agent Bernard', '2024-01-21', 200, 4);
+
+GO
