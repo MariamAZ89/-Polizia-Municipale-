@@ -39,14 +39,71 @@ INSERT INTO DonneesPersonnelles (Nom, Prenom, Adresse, Ville, CodePostal, CodeFi
 GO
 
 INSERT INTO ViolationType (Description) VALUES
-('Exc�s de vitesse'),
+('Excès de vitesse'),
 ('Stationnement interdit'),
 ('Non-respect du feu rouge');
 GO
 
+
 INSERT INTO Minutes (ViolationID, IDClient, ViolationDate, ViolationAddress, AgentName, MinutesTranscriptionDate, Amount, PointsDeduction) VALUES
 (1, 1, '2024-01-10', 'Boulevard Saint-Michel', 'Agent Durand', '2024-01-11', 135, 2),
 (2, 2, '2024-01-15', 'Rue Lafayette', 'Agent Morel', '2024-01-16', 35, 0),
-(3, 1, '2024-01-20', 'Place de la R�publique', 'Agent Bernard', '2024-01-21', 200, 4);
+(3, 1, '2024-01-20', 'Place de la République', 'Agent Bernard', '2024-01-21', 200, 4);
 
 GO
+
+--1.	Conteggio dei verbali trascritti
+SELECT COUNT(*) AS 'NombreRapports'  FROM Minutes
+
+-- 2.	Conteggio dei verbali trascritti raggruppati per anagrafe,
+SELECT dp.Ville , COUNT(m.MinuteID) as 'NombreRapports'
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+GROUP BY dp.Ville
+
+--3.	Conteggio dei verbali trascritti raggruppati per tipo di violazione, 
+SELECT vt.Description , COUNT(m.MinuteID) as 'NombreRapports'
+FROM MINUTES m INNER JOIN ViolationType vt ON m.ViolationID = vt.ViolationID
+GROUP BY vt.Description
+
+--4.	Totale dei punti decurtati per ogni anagrafe,
+SELECT dp.Ville , COUNT(m.PointsDeduction) as 'NombreRapports'
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+GROUP BY dp.Ville
+
+--5.   Cognome, Nome, Data violazione, Indirizzo violazione, importo e punti decurtati per tutti gli anagrafici residenti a Palermo.
+SELECT dp.Nom, dp.Prenom, m.ViolationDate, m.ViolationAddress , m.Amount, m.PointsDeduction
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+where dp.Ville = 'Palerme'
+
+--6.  Cognome, Nome, Indirizzo, Data violazione, importo e punti decurtati per le violazioni fatte tra il febbraio 2009 e luglio 2009,
+SELECT dp.Nom, dp.Prenom, m.ViolationDate , m.Amount, m.PointsDeduction
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+where m.ViolationDate between '2009-02-01' and '2009-07-31'
+
+--7.	Totale degli importi per ogni anagrafico,
+SELECT dp.Ville , SUM(m.Amount) as 'MontantTotal (£)'
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+GROUP BY dp.Ville
+
+--8.	Liste Visualizzazione di tutti gli anagrafici residenti a Palermo,
+SELECT * FROM DonneesPersonnelles where Ville = 'Palerme'
+
+--9.	Query che visualizzi Data violazione, Importo e decurta mento punti relativi ad una certa data, 
+DECLARE @DateCicle DATE = '2024-01-10'
+SELECT * FROM MINUTES where ViolationDate = @DateCicle
+
+--10.	Conteggio delle violazioni contestate raggruppate per Nominativo dell’agente di Polizia, 
+SELECT AgentName , count(*) as 'NombreInfractions'
+FROM MINUTES group by AgentName
+
+--11.	Cognome, Nome, Indirizzo, Data violazione, Importo e punti decurtati per tutte le violazioni che superino il decurtamento di 5 punti,
+
+SELECT dp.Nom, dp.Prenom,dp.Adresse , m.ViolationDate , m.Amount, m.PointsDeduction
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+where m.PointsDeduction > 5;
+
+--12.	 Cognome, Nome, Indirizzo, Data violazione, Importo e punti decurtati per tutte le violazioni che superino l’importo di 400 euro. 
+
+SELECT dp.Nom, dp.Prenom,dp.Adresse , m.ViolationDate , m.Amount, m.PointsDeduction
+FROM MINUTES m INNER JOIN DonneesPersonnelles dp ON m.IDClient = dp.ID
+where m.Amount > 400;
